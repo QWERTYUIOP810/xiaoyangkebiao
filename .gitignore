@@ -1,0 +1,13 @@
+.env
+*.local
+__pycache__/
+*.pyc
+demo.ics
+preview.png
+
+# 调试用的原始页面，别提交
+docs/table*.html
+docs/week*.html
+docs/class.html
+docs/exp*.html
+docs/*.js

@@ -9,11 +9,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="课表">
-<title>本周课表</title>
+<title>郑航课表</title>
 <style>
   :root{
     --bg:#f5f6f8; --card:#fff; --text:#1c1f23; --muted:#8a9099;
-    --line:#e8eaed; --accent:#0d6efd; --today:#e8f0ff;
+    --line:#e8eaed; --accent:#0d6efd; --today:#e8f0ff; --danger:#dc3545;
   }
   @media (prefers-color-scheme: dark){
     :root{ --bg:#16181c; --card:#1f2227; --text:#e9ecef; --muted:#8b929c;
@@ -22,127 +22,256 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--text);width:100%;overflow-x:hidden;
        font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-       padding:0 0 40px;}
-  header{position:sticky;top:0;z-index:9;background:var(--bg);padding:14px 16px 10px;
-         border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
-  .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  h1{font-size:19px;margin:0;font-weight:650}
-  .sub{color:var(--muted);font-size:12px;margin-top:3px}
-  .nav{display:flex;align-items:center;gap:6px}
-  button{background:var(--card);border:1px solid var(--line);color:var(--text);
-         border-radius:10px;padding:7px 11px;font-size:14px;cursor:pointer}
-  button:active{transform:scale(.96)}
-  .today-btn{color:var(--accent);border-color:var(--accent)}
-  main{padding:12px 12px 0}
-  .day{background:var(--card);border:1px solid var(--line);border-radius:14px;
-       margin-bottom:10px;overflow:hidden}
-  .day.today{border-color:var(--accent);background:var(--today)}
-  .day-h{display:flex;justify-content:space-between;align-items:baseline;
-         padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px}
-  .day-h b{font-weight:600}
-  .day-h span{color:var(--muted);font-size:12px}
-  .empty{padding:14px;color:var(--muted);font-size:13px;text-align:center}
-  .item{display:flex;gap:12px;padding:11px 14px;border-top:1px solid var(--line)}
-  .item:first-of-type{border-top:none}
-  .item.clash{background:rgba(220,53,69,.06)}
-  .tag.clash-tag{background:rgba(220,53,69,.12);color:#dc3545}
-  .time{flex:0 0 78px;color:var(--muted);font-size:12px;line-height:1.5;padding-top:2px}
-  .time b{display:block;color:var(--text);font-size:13px;font-weight:600}
-  .body{min-width:0;flex:1}
-  .name{font-size:15px;font-weight:600;line-height:1.35;word-break:break-word}
-  .meta{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.5;word-break:break-word}
-  .tag{display:inline-block;border-radius:6px;padding:1px 6px;font-size:11px;
-       background:rgba(13,110,253,.1);color:var(--accent);margin-left:6px;vertical-align:2px}
-  .legend{text-align:center;color:var(--muted);font-size:11px;padding:6px 0 0}
+       padding:0 0 30px;}
+  header{position:sticky;top:0;z-index:9;background:var(--bg);padding:12px 14px 8px;
+         border-bottom:1px solid var(--line)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  h1{font-size:18px;margin:0;font-weight:650}
+  .sub{color:var(--muted);font-size:12px;margin-top:2px}
+  .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:3px}
+  .seg button{border:0;background:transparent;color:var(--muted);font-size:13px;
+              padding:6px 14px;border-radius:8px;cursor:pointer}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:600}
+  .wknav{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .wknav button{flex:0 0 auto;background:var(--card);border:1px solid var(--line);color:var(--text);
+                border-radius:9px;padding:6px 11px;font-size:13px;cursor:pointer}
+  .wknav .grow{flex:1;text-align:center;color:var(--muted);font-size:12px}
+  main{padding:10px 12px 0}
+
+  .daycard{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .slot{display:flex;gap:10px;border-top:1px solid var(--line);min-height:62px}
+  .slot:first-child{border-top:none}
+  .slot .lab{flex:0 0 70px;padding:9px 0 9px 12px;border-right:1px solid var(--line)}
+  .slot .lab .p{font-size:10px;color:var(--muted)}
+  .slot .lab .n{font-size:12px;font-weight:600;margin-top:1px}
+  .slot .lab .t{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.35}
+  .slot .cont{flex:1;min-width:0;padding:8px 12px 8px 0;display:flex;flex-direction:column;
+              justify-content:center;gap:6px}
+  .cls{padding:1px 0}
+  .cls .nm{font-size:14px;font-weight:600;line-height:1.35;word-break:break-word}
+  .cls .mt{color:var(--muted);font-size:11px;margin-top:2px;line-height:1.4;word-break:break-word}
+  .badge{display:inline-block;border-radius:5px;padding:0 5px;font-size:10px;background:rgba(220,53,69,.12);
+         color:var(--danger);margin-left:5px;vertical-align:1px}
+
+  .grid-wrap{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  table{border-collapse:collapse;width:100%;table-layout:fixed}
+  th,td{border:1px solid var(--line);padding:0;vertical-align:top}
+  th{font-weight:500;font-size:10px;color:var(--muted);background:var(--bg);padding:5px 1px;text-align:center}
+  th .d{display:block;font-size:9px;opacity:.8}
+  th.today-col{color:var(--accent);font-weight:700}
+  td.lab{width:30px;background:var(--bg);text-align:center;font-size:9px;color:var(--muted);
+         vertical-align:middle;line-height:1.2;padding:2px 0}
+  td.lab b{display:block;color:var(--text);font-size:10px}
+  td.c{height:56px;padding:3px 2px;cursor:pointer}
+  td.c.empty{background:transparent}
+  td.c.today-col{background:var(--today)}
+  .cn{font-size:10px;line-height:1.25;font-weight:600;word-break:break-all;overflow:hidden;
+      display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+  .cr{font-size:9px;color:var(--muted);line-height:1.2;margin-top:2px;word-break:break-all}
+
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:50}
+  .mask.on{display:block}
+  .sheet{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-radius:16px 16px 0 0;
+         padding:16px 18px calc(18px + env(safe-area-inset-bottom));z-index:51;
+         transform:translateY(110%);transition:transform .22s ease}
+  .sheet.on{transform:translateY(0)}
+  .sheet h3{margin:0 0 8px;font-size:16px}
+  .sheet .kv{font-size:13px;color:var(--muted);line-height:1.9}
+  .sheet .kv b{color:var(--text);font-weight:500}
+  .sheet button{margin-top:12px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);
+                background:var(--bg);color:var(--text);font-size:14px}
+  .tip{text-align:center;color:var(--muted);font-size:11px;padding:8px 0 0}
 </style>
 </head>
 <body>
 <header>
   <div class="row">
     <div>
-      <h1 id="title">本周课表</h1>
+      <h1 id="title">今天</h1>
       <div class="sub" id="sub"></div>
     </div>
-    <div class="nav">
-      <button id="prev" aria-label="上一周">‹</button>
-      <button id="next" aria-label="下一周">›</button>
+    <div class="seg">
+      <button id="tabDay" class="on">今天</button>
+      <button id="tabWeek">本周</button>
     </div>
   </div>
+  <div class="wknav" id="wknav" style="display:none">
+    <button id="prev">‹</button>
+    <div class="grow" id="wktext"></div>
+    <button id="next">›</button>
+  </div>
 </header>
+
 <main id="main"></main>
-<div class="legend">左右按钮切换周次 · 数据每次打开自动是最新的</div>
+<div class="tip" id="tip"></div>
+
+<div class="mask" id="mask"></div>
+<div class="sheet" id="sheet">
+  <h3 id="sName"></h3>
+  <div class="kv" id="sBody"></div>
+  <button id="sClose">关闭</button>
+</div>
 
 <script>
 const D = {"termStart": "2026-09-07", "title": "郑航课表", "periods": {"1": ["08:00", "08:45"], "2": ["08:55", "09:40"], "3": ["10:00", "10:45"], "4": ["10:55", "11:40"], "5": ["14:30", "15:15"], "6": ["15:25", "16:10"], "7": ["16:30", "17:15"], "8": ["17:25", "18:10"], "9": ["19:30", "20:15"], "10": ["20:25", "21:10"]}, "courses": [{"name": "企业管理与价值创造", "teacher": "侯丽、白占俊", "room": "01C106", "weekday": 1, "start": 1, "end": 2, "weeks": [10, 11, 12, 13, 14, 15, 16, 17, 18]}, {"name": "线性代数", "teacher": "杨永", "room": "01B102", "weekday": 1, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8]}, {"name": "材料科学基础I", "teacher": "白中义、关莉", "room": "07B306", "weekday": 1, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}, {"name": "物理化学", "teacher": "刘光辉", "room": "07B207", "weekday": 1, "start": 5, "end": 6, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B306", "weekday": 1, "start": 5, "end": 6, "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]}, {"name": "大学英语I（三）", "teacher": "梁海霞", "room": "02A201", "weekday": 1, "start": 7, "end": 8, "weeks": [1, 3, 5, 7, 9, 11, 13, 15, 17]}, {"name": "大学物理（下）", "teacher": "张新月", "room": "01B302", "weekday": 2, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]}, {"name": "体育（三）", "teacher": "寇冠", "room": "足球场1", "weekday": 2, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16]}, {"name": "普通化学", "teacher": "李佳华、王泽华", "room": "09B306", "weekday": 2, "start": 5, "end": 6, "weeks": [11]}, {"name": "马克思主义基本原理", "teacher": "崔小莉", "room": "01C106", "weekday": 2, "start": 5, "end": 6, "weeks": [2, 4, 6, 8, 10, 12]}, {"name": "普通化学", "teacher": "李佳华、王泽华", "room": "09B308", "weekday": 2, "start": 7, "end": 8, "weeks": [11]}, {"name": "线性代数", "teacher": "杨永", "room": "01B102", "weekday": 3, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}, {"name": "普通化学", "teacher": "万赈民、时悦悦", "room": "03A307", "weekday": 3, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}, {"name": "材料科学基础I", "teacher": "白中义、关莉", "room": "07C102", "weekday": 3, "start": 5, "end": 6, "weeks": [1, 3, 5, 7, 9, 11, 13, 15]}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B306", "weekday": 3, "start": 5, "end": 6, "weeks": [3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]}, {"name": "大学英语I（三）", "teacher": "梁海霞", "room": "05B104", "weekday": 3, "start": 7, "end": 8, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]}, {"name": "马克思主义基本原理", "teacher": "崔小莉", "room": "01C106", "weekday": 4, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}, {"name": "物理化学", "teacher": "刘光辉", "room": "07B301", "weekday": 4, "start": 3, "end": 4, "weeks": [1, 3, 5, 7, 9, 11, 13, 15]}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B306", "weekday": 4, "start": 3, "end": 4, "weeks": [3, 4, 5, 6, 7, 8]}, {"name": "体育（三）", "teacher": "寇冠", "room": "足球场1", "weekday": 4, "start": 5, "end": 6, "weeks": [11]}, {"name": "大学物理（下）", "teacher": "张新月", "room": "01B204", "weekday": 4, "start": 7, "end": 8, "weeks": [1, 3, 5, 7, 9, 11, 13, 15, 17]}, {"name": "航空航天与系统工程", "teacher": "梁燕娟", "room": "07B105", "weekday": 5, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]}, {"name": "影视鉴赏", "teacher": "宋春丽", "room": "05B103", "weekday": 5, "start": 5, "end": 6, "weeks": [1, 2, 3, 4, 5, 6, 7, 8]}, {"name": "普通化学", "teacher": "张珂", "room": "09B305", "weekday": 5, "start": 5, "end": 6, "weeks": [14]}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B501", "weekday": 5, "start": 5, "end": 6, "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]}, {"name": "企业管理与价值创造", "teacher": "侯丽、白占俊", "room": "05B108", "weekday": 5, "start": 7, "end": 8, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9]}, {"name": "普通化学", "teacher": "张珂", "room": "09B303", "weekday": 5, "start": 7, "end": 8, "weeks": [14]}, {"name": "形势与政策（3）", "teacher": "运奕帆", "room": "01A202", "weekday": 6, "start": 5, "end": 6, "weeks": [7, 8, 9, 10]}]};
 const DAY = 86400000;
-const WEEKDAYS = ["周一","周二","周三","周四","周五","周六","周日"];
+const WD = ["周一","周二","周三","周四","周五","周六","周日"];
+const BIG = [
+  {p:"上午", s:1,  e:2},
+  {p:"上午", s:3,  e:4},
+  {p:"下午", s:5,  e:6},
+  {p:"下午", s:7,  e:8},
+  {p:"晚上", s:9,  e:10},
+];
+
+const termStart = parseDate(D.termStart);
+const today = startOfDay(new Date());
+const curWeek = Math.max(1, Math.floor((today - termStart) / (7*DAY)) + 1);
+
+const qs = new URLSearchParams(location.search);
+let mode = qs.get("view") === "week" ? "week" : "day";
+let week = Number(qs.get("week")) || Math.max(1, curWeek);
+let items = [];
 
 function parseDate(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
 function startOfDay(d){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
 function fmt(d){ return (d.getMonth()+1)+"月"+d.getDate()+"日"; }
-
-const termStart = parseDate(D.termStart);
-const today = startOfDay(new Date());
-const baseWeek = Math.floor((today - termStart)/ (7*DAY)) + 1;
-let week = Math.max(1, baseWeek);
-
+function isoWd(d){ return (d.getDay()+6)%7 + 1; }
 function dateOf(w, wd){ return new Date(termStart.getTime() + ((w-1)*7 + (wd-1))*DAY); }
 function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function bigOf(c){ return Math.min(4, Math.floor((c.start-1)/2)); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
 
-function hhmm(t){ return t; }
-
-function render(){
-  const main = document.getElementById("main");
-  document.getElementById("title").textContent = "第 " + week + " 周";
-  const mon = dateOf(week,1), sun = dateOf(week,7);
-  document.getElementById("sub").textContent = fmt(mon)+" – "+fmt(sun) + (week===baseWeek ? " · 本周" : "");
-
-  let html = "";
-  for (let wd=1; wd<=7; wd++){
-    const d = dateOf(week, wd);
-    const isToday = sameDay(d, today);
-    const items = D.courses
-      .filter(c => c.weekday===wd && c.weeks.includes(week))
-      .sort((a,b)=> a.start-b.start || a.end-b.end);
-
-    html += '<section class="day'+(isToday?' today':'')+'"'+(isToday?' id="today"':'')+'>';
-    html += '<div class="day-h"><b>'+WEEKDAYS[wd-1]+(isToday?' · 今天':'')+'</b><span>'+fmt(d)+'</span></div>';
-    if (!items.length){
-      html += '<div class="empty">没课</div>';
-    } else {
-      const clash = new Set();
-      for (let i=0;i<items.length;i++){
-        for (let j=i+1;j<items.length;j++){
-          if (items[i].start <= items[j].end && items[j].start <= items[i].end){
-            clash.add(i); clash.add(j);
-          }
-        }
-      }
-      items.forEach(function(c, idx){
-        const p1 = D.periods[String(c.start)], p2 = D.periods[String(c.end)];
-        const meta = [];
-        if (c.room) meta.push(c.room);
-        if (c.teacher) meta.push(c.teacher);
-        meta.push("第"+c.start+"-"+c.end+"节");
-        html += '<div class="item'+(clash.has(idx)?' clash':'')+'">'
-             +  '<div class="time"><b>'+p1[0]+'</b>'+p2[1]+'</div>'
-             +  '<div class="body"><div class="name">'+esc(c.name)
-             +  (clash.has(idx)?'<span class="tag clash-tag">冲突</span>':'')
-             +  '</div><div class="meta">'+esc(meta.join(" · "))+'</div></div>'
-             +  '</div>';
-      });
-    }
-    html += '</section>';
+function weeksText(arr){
+  const a = (arr||[]).slice().sort((x,y)=>x-y);
+  if (!a.length) return "";
+  const out = []; let s = a[0], p = a[0];
+  for (let i=1;i<a.length;i++){
+    if (a[i]===p+1){ p=a[i]; continue; }
+    out.push(s===p ? String(s) : s+"-"+p); s=p=a[i];
   }
-  main.innerHTML = html;
-  const t = document.getElementById("today");
-  if (t) t.scrollIntoView({block:"center"});
+  out.push(s===p ? String(s) : s+"-"+p);
+  return out.join(",")+"周";
 }
 
-function esc(s){ return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function listFor(w, wd){
+  return D.courses.filter(c => c.weekday===wd && c.weeks.includes(w))
+                  .sort((a,b)=> a.start-b.start);
+}
 
-document.getElementById("prev").onclick = ()=>{ week=Math.max(1,week-1); render(); };
-document.getElementById("next").onclick = ()=>{ week=week+1; render(); };
+function clashes(arr){
+  const s = new Set();
+  for (let i=0;i<arr.length;i++) for (let j=i+1;j<arr.length;j++)
+    if (arr[i].start<=arr[j].end && arr[j].start<=arr[i].end){ s.add(i); s.add(j); }
+  return s;
+}
+
+function renderDay(){
+  const wd = isoWd(today);
+  const w = Math.max(1, Math.floor((today - termStart)/(7*DAY)) + 1);
+  document.getElementById("title").textContent = "今天";
+  document.getElementById("sub").textContent = "第 " + w + " 周 · " + WD[wd-1] + " · " + fmt(today);
+  document.getElementById("wknav").style.display = "none";
+
+  const day = listFor(w, wd);
+  const clash = clashes(day);
+  items = [];
+  let html = '<div class="daycard">';
+  BIG.forEach(function(b, i){
+    const s1 = D.periods[String(b.s)][0], e1 = D.periods[String(b.e)][1];
+    const list = day.filter(c => bigOf(c)===i);
+    html += '<div class="slot">';
+    html += '<div class="lab"><div class="p">'+b.p+'</div><div class="n">第'+b.s+'-'+b.e+'节</div>'
+         +  '<div class="t">'+s1+'<br>'+e1+'</div></div>';
+    html += '<div class="cont">';
+    if (!list.length) html += '<div class="cls">&nbsp;</div>';
+    list.forEach(function(c){
+      const idx = items.push(c) - 1;
+      const ci = day.indexOf(c);
+      html += '<div class="cls" data-i="'+idx+'">'
+           +  '<div class="nm">'+esc(c.name)+(clash.has(ci)?'<span class="badge">冲突</span>':'')+'</div>'
+           +  '<div class="mt">'+esc([c.room, c.teacher].filter(Boolean).join(" · "))+'</div>'
+           +  '</div>';
+    });
+    html += '</div></div>';
+  });
+  html += '</div>';
+  document.getElementById("main").innerHTML = html;
+  document.getElementById("tip").textContent = day.length ? "点课程看详情" : "今天没课";
+}
+
+function renderWeek(){
+  document.getElementById("title").textContent = "第 " + week + " 周";
+  document.getElementById("sub").textContent = fmt(dateOf(week,1)) + " – " + fmt(dateOf(week,7));
+  document.getElementById("wknav").style.display = "flex";
+  document.getElementById("wktext").textContent = week===curWeek ? "本周" : "第"+week+"周";
+
+  items = [];
+  let html = '<div class="grid-wrap"><table><thead><tr><th></th>';
+  for (let wd=1; wd<=7; wd++){
+    const d = dateOf(week, wd);
+    const isT = sameDay(d, today);
+    html += '<th class="'+(isT?"today-col":"")+'">'+WD[wd-1]+'<span class="d">'+(d.getMonth()+1)+'/'+d.getDate()+'</span></th>';
+  }
+  html += '</tr></thead><tbody>';
+
+  BIG.forEach(function(b, i){
+    html += '<tr><td class="lab"><b>'+b.s+'-'+b.e+'</b>'+b.p+'</td>';
+    for (let wd=1; wd<=7; wd++){
+      const d = dateOf(week, wd);
+      const isT = sameDay(d, today);
+      const list = listFor(week, wd).filter(c => bigOf(c)===i);
+      html += '<td class="c'+(isT?" today-col":"")+(list.length?"":" empty")+'">';
+      list.forEach(function(c){
+        const idx = items.push(c) - 1;
+        html += '<div data-i="'+idx+'"><div class="cn">'+esc(c.name)+'</div>'
+             +  (c.room ? '<div class="cr">'+esc(c.room)+'</div>' : '')
+             +  '</div>';
+      });
+      html += '</td>';
+    }
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  document.getElementById("main").innerHTML = html;
+  document.getElementById("tip").textContent = "点格子看详情 · 左右切换周次";
+}
+
+function render(){
+  if (mode === "day") renderDay(); else renderWeek();
+  document.getElementById("tabDay").className = mode==="day" ? "on" : "";
+  document.getElementById("tabWeek").className = mode==="week" ? "on" : "";
+}
+
+document.getElementById("tabDay").onclick = function(){ mode="day"; render(); };
+document.getElementById("tabWeek").onclick = function(){ mode="week"; render(); };
+document.getElementById("prev").onclick = function(){ week=Math.max(1,week-1); render(); };
+document.getElementById("next").onclick = function(){ week=week+1; render(); };
+
+document.getElementById("main").addEventListener("click", function(e){
+  const el = e.target.closest("[data-i]");
+  if (!el) return;
+  const c = items[Number(el.dataset.i)];
+  if (!c) return;
+  document.getElementById("sName").textContent = c.name;
+  const rows = [];
+  if (c.room) rows.push("教室　<b>"+esc(c.room)+"</b>");
+  if (c.teacher) rows.push("教师　<b>"+esc(c.teacher)+"</b>");
+  rows.push("时间　<b>"+D.periods[String(c.start)][0]+" - "+D.periods[String(c.end)][1]+"</b>");
+  rows.push("节次　<b>第"+c.start+"-"+c.end+"节</b>");
+  rows.push("周次　<b>"+weeksText(c.weeks)+"</b>");
+  document.getElementById("sBody").innerHTML = rows.join("<br>");
+  document.getElementById("mask").classList.add("on");
+  document.getElementById("sheet").classList.add("on");
+});
+
+function closeSheet(){
+  document.getElementById("mask").classList.remove("on");
+  document.getElementById("sheet").classList.remove("on");
+}
+document.getElementById("mask").onclick = closeSheet;
+document.getElementById("sClose").onclick = closeSheet;
+
 render();
 
 if ("serviceWorker" in navigator) {

@@ -32,11 +32,11 @@ python publish.py
 
 ## 手机
 
-打开 https://qwertyuiop810.github.io/zua-kb/
+打开 https://qwertyuiop810.github.io/xiaoyangkebiao/
 
 菜单 → **添加到主屏幕**，以后点图标就是本周课表。
 
-日历订阅（可选）：https://qwertyuiop810.github.io/zua-kb/schedule.ics
+日历订阅（可选）：https://qwertyuiop810.github.io/xiaoyangkebiao/schedule.ics
 
 ---
 

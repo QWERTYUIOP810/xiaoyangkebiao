@@ -1,4 +1,9 @@
+gate.json
+.venv/
 .env
+.token
+.push_state.json
+logs/
 *.local
 __pycache__/
 *.pyc

@@ -82,10 +82,31 @@
   .sheet .kv b{color:var(--text);font-weight:500}
   .sheet button{margin-top:12px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);
                 background:var(--bg);color:var(--text);font-size:14px}
+  .gate{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;
+        justify-content:center;padding:24px}
+  .gate.off{display:none}
+  .gatebox{width:100%;max-width:320px;text-align:center}
+  .gatebox .gt{font-size:17px;font-weight:650}
+  .gatebox .gs{color:var(--muted);font-size:12px;margin:6px 0 18px}
+  .gatebox input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);
+                 background:var(--card);color:var(--text);font-size:16px;text-align:center;outline:none}
+  .gatebox button{margin-top:12px;width:100%;padding:12px;border-radius:10px;border:0;
+                  background:var(--accent);color:#fff;font-size:15px}
+  .gatebox .ge{color:var(--danger);font-size:12px;margin-top:10px;min-height:16px}
   .tip{text-align:center;color:var(--muted);font-size:11px;padding:8px 0 0}
 </style>
 </head>
 <body>
+
+<div class="gate off" id="gate">
+  <div class="gatebox">
+    <div class="gt">课表已加密</div>
+    <div class="gs" id="ghint">输入口令查看</div>
+    <input id="gpw" type="password" autocomplete="current-password" placeholder="口令">
+    <button id="gok">进入</button>
+    <div class="ge" id="gerr"></div>
+  </div>
+</div>
 <header>
   <div class="row">
     <div>
@@ -106,6 +127,8 @@
 
 <main id="main"></main>
 <div class="tip" id="tip"></div>
+<div class="tip" id="updated"></div>
+<div class="tip" id="lockwrap" style="display:none"><a href="#" id="lock" style="color:inherit">锁定本页</a></div>
 
 <div class="mask" id="mask"></div>
 <div class="sheet" id="sheet">
@@ -115,7 +138,7 @@
 </div>
 
 <script>
-const D = {"termStart": "2026-09-07", "title": "郑航课表", "periods": {"1": ["08:00", "08:45"], "2": ["08:55", "09:40"], "3": ["10:00", "10:45"], "4": ["10:55", "11:40"], "5": ["14:30", "15:15"], "6": ["15:25", "16:10"], "7": ["16:30", "17:15"], "8": ["17:25", "18:10"], "9": ["19:30", "20:15"], "10": ["20:25", "21:10"]}, "courses": [{"name": "企业管理与价值创造", "teacher": "侯丽、白占俊", "room": "01C106", "weekday": 1, "start": 1, "end": 2, "weeks": [10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "线性代数", "teacher": "杨永", "room": "01B102", "weekday": 1, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8], "kind": "", "note": ""}, {"name": "材料科学基础I", "teacher": "白中义、关莉", "room": "07B306", "weekday": 1, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], "kind": "", "note": ""}, {"name": "物理化学", "teacher": "刘光辉", "room": "07B207", "weekday": 1, "start": 5, "end": 6, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], "kind": "", "note": ""}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B306", "weekday": 1, "start": 5, "end": 6, "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "大学英语I（三）", "teacher": "梁海霞", "room": "02A201", "weekday": 1, "start": 7, "end": 8, "weeks": [1, 3, 5, 7, 9, 11, 13, 15, 17], "kind": "", "note": "大学英语I（三）"}, {"name": "大学物理（下）", "teacher": "张新月", "room": "01B302", "weekday": 2, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": "智慧教室"}, {"name": "体育（三）", "teacher": "寇冠", "room": "足球场1", "weekday": 2, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16], "kind": "", "note": ""}, {"name": "普通化学", "teacher": "李佳华、王泽华", "room": "09B306", "weekday": 2, "start": 5, "end": 6, "weeks": [11], "kind": "", "note": "缓冲溶液性质"}, {"name": "马克思主义基本原理", "teacher": "崔小莉", "room": "01C106", "weekday": 2, "start": 5, "end": 6, "weeks": [2, 4, 6, 8, 10, 12], "kind": "", "note": ""}, {"name": "普通化学", "teacher": "李佳华、王泽华", "room": "09B308", "weekday": 2, "start": 7, "end": 8, "weeks": [11], "kind": "", "note": "毛细管测定液体表面张力"}, {"name": "线性代数", "teacher": "杨永", "room": "01B102", "weekday": 3, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], "kind": "", "note": ""}, {"name": "普通化学", "teacher": "万赈民、时悦悦", "room": "03A307", "weekday": 3, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], "kind": "", "note": ""}, {"name": "材料科学基础I", "teacher": "白中义、关莉", "room": "07C102", "weekday": 3, "start": 5, "end": 6, "weeks": [1, 3, 5, 7, 9, 11, 13, 15], "kind": "", "note": ""}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B306", "weekday": 3, "start": 5, "end": 6, "weeks": [3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "大学英语I（三）", "teacher": "梁海霞", "room": "05B104", "weekday": 3, "start": 7, "end": 8, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "马克思主义基本原理", "teacher": "崔小莉", "room": "01C106", "weekday": 4, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], "kind": "", "note": ""}, {"name": "物理化学", "teacher": "刘光辉", "room": "07B301", "weekday": 4, "start": 3, "end": 4, "weeks": [1, 3, 5, 7, 9, 11, 13, 15], "kind": "", "note": ""}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B306", "weekday": 4, "start": 3, "end": 4, "weeks": [3, 4, 5, 6, 7, 8], "kind": "", "note": ""}, {"name": "体育（三）", "teacher": "寇冠", "room": "足球场1", "weekday": 4, "start": 5, "end": 6, "weeks": [11], "kind": "", "note": ""}, {"name": "大学物理（下）", "teacher": "张新月", "room": "01B204", "weekday": 4, "start": 7, "end": 8, "weeks": [1, 3, 5, 7, 9, 11, 13, 15, 17], "kind": "", "note": "智慧教室"}, {"name": "航空航天与系统工程", "teacher": "梁燕娟", "room": "07B105", "weekday": 5, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "影视鉴赏", "teacher": "宋春丽", "room": "05B103", "weekday": 5, "start": 5, "end": 6, "weeks": [1, 2, 3, 4, 5, 6, 7, 8], "kind": "", "note": ""}, {"name": "普通化学", "teacher": "张珂", "room": "09B305", "weekday": 5, "start": 5, "end": 6, "weeks": [14], "kind": "", "note": "溶液折光率的测定"}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B501", "weekday": 5, "start": 5, "end": 6, "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "企业管理与价值创造", "teacher": "侯丽、白占俊", "room": "05B108", "weekday": 5, "start": 7, "end": 8, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9], "kind": "", "note": ""}, {"name": "普通化学", "teacher": "张珂", "room": "09B303", "weekday": 5, "start": 7, "end": 8, "weeks": [14], "kind": "", "note": "氧化还原反应"}, {"name": "形势与政策（3）", "teacher": "运奕帆", "room": "01A202", "weekday": 6, "start": 5, "end": 6, "weeks": [7, 8, 9, 10], "kind": "", "note": ""}, {"name": "混合法测量冰的熔化热", "teacher": "冯德胜", "room": "08A409", "weekday": 5, "start": 5, "end": 6, "weeks": [9], "kind": "实验", "note": "电磁学实验室"}, {"name": "等厚干涉现象的观察与应用", "teacher": "王玉梅", "room": "08A410", "weekday": 4, "start": 3, "end": 4, "weeks": [10], "kind": "实验", "note": "光学实验室"}, {"name": "简谐振动与弹簧劲度系数", "teacher": "许军伟", "room": "08A403", "weekday": 5, "start": 5, "end": 6, "weeks": [11], "kind": "实验", "note": "电磁学实验室"}, {"name": "夫琅禾费双缝衍射", "teacher": "王海雨", "room": "08A405", "weekday": 1, "start": 1, "end": 2, "weeks": [10], "kind": "实验", "note": "力学实验室"}, {"name": "太阳能电池综合应用", "teacher": "马晓龙", "room": "08A401", "weekday": 7, "start": 7, "end": 8, "weeks": [11], "kind": "实验", "note": "近代物理实验室"}, {"name": "偏振光的观测与研究", "teacher": "田喜敏", "room": "08C513", "weekday": 6, "start": 3, "end": 4, "weeks": [9], "kind": "实验", "note": "电磁学实验室"}, {"name": "声速的测定", "teacher": "钟发成", "room": "08C510", "weekday": 5, "start": 5, "end": 6, "weeks": [12], "kind": "实验", "note": "光学实验室"}, {"name": "光电效应和普朗克常量的测定", "teacher": "高前程", "room": "08A407", "weekday": 5, "start": 5, "end": 6, "weeks": [10], "kind": "实验", "note": "电子学实验室"}]};
+const D = {"termStart": "2026-09-07", "title": "郑航课表", "gate": {"hash": "1de0187723bd6cc499424270839f0dcf473847e223dcb92c8495b72d9d1fd7db", "hint": "输入口令查看课表"}, "updated": "2026-11-06 12:40", "periods": {"1": ["08:00", "08:45"], "2": ["08:55", "09:40"], "3": ["10:00", "10:45"], "4": ["10:55", "11:40"], "5": ["14:30", "15:15"], "6": ["15:25", "16:10"], "7": ["16:30", "17:15"], "8": ["17:25", "18:10"], "9": ["19:30", "20:15"], "10": ["20:25", "21:10"]}, "courses": [{"name": "企业管理与价值创造", "teacher": "侯丽、白占俊", "room": "01C106", "weekday": 1, "start": 1, "end": 2, "weeks": [10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "线性代数", "teacher": "杨永", "room": "01B102", "weekday": 1, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8], "kind": "", "note": ""}, {"name": "材料科学基础I", "teacher": "白中义、关莉", "room": "07B306", "weekday": 1, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], "kind": "", "note": ""}, {"name": "物理化学", "teacher": "刘光辉", "room": "07B207", "weekday": 1, "start": 5, "end": 6, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], "kind": "", "note": ""}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B306", "weekday": 1, "start": 5, "end": 6, "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "大学英语I（三）", "teacher": "梁海霞", "room": "02A201", "weekday": 1, "start": 7, "end": 8, "weeks": [1, 3, 5, 7, 9, 11, 13, 15, 17], "kind": "", "note": "大学英语I（三）"}, {"name": "大学物理（下）", "teacher": "张新月", "room": "01B405", "weekday": 1, "start": 9, "end": 10, "weeks": [10], "kind": "", "note": ""}, {"name": "大学物理（下）", "teacher": "张新月", "room": "01B302", "weekday": 2, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": "智慧教室"}, {"name": "体育（三）", "teacher": "寇冠", "room": "足球场1", "weekday": 2, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16], "kind": "", "note": ""}, {"name": "普通化学", "teacher": "李佳华、王泽华", "room": "09B306", "weekday": 2, "start": 5, "end": 6, "weeks": [11], "kind": "", "note": "缓冲溶液性质"}, {"name": "马克思主义基本原理", "teacher": "崔小莉", "room": "01C106", "weekday": 2, "start": 5, "end": 6, "weeks": [2, 4, 6, 8, 10, 12], "kind": "", "note": ""}, {"name": "普通化学", "teacher": "李佳华、王泽华", "room": "09B308", "weekday": 2, "start": 7, "end": 8, "weeks": [11], "kind": "", "note": "毛细管测定液体表面张力"}, {"name": "线性代数", "teacher": "杨永", "room": "01B102", "weekday": 3, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], "kind": "", "note": ""}, {"name": "普通化学", "teacher": "万赈民、时悦悦", "room": "03A307", "weekday": 3, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], "kind": "", "note": ""}, {"name": "材料科学基础I", "teacher": "白中义、关莉", "room": "07C102", "weekday": 3, "start": 5, "end": 6, "weeks": [1, 3, 5, 7, 9, 11, 13, 15], "kind": "", "note": ""}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B306", "weekday": 3, "start": 5, "end": 6, "weeks": [3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "大学英语I（三）", "teacher": "梁海霞", "room": "05B104", "weekday": 3, "start": 7, "end": 8, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "马克思主义基本原理", "teacher": "崔小莉", "room": "01C106", "weekday": 4, "start": 1, "end": 2, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], "kind": "", "note": ""}, {"name": "物理化学", "teacher": "刘光辉", "room": "07B301", "weekday": 4, "start": 3, "end": 4, "weeks": [1, 3, 5, 7, 9, 11, 13, 15], "kind": "", "note": ""}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B306", "weekday": 4, "start": 3, "end": 4, "weeks": [3, 4, 5, 6, 7, 8], "kind": "", "note": ""}, {"name": "体育（三）", "teacher": "寇冠", "room": "足球场1", "weekday": 4, "start": 5, "end": 6, "weeks": [11], "kind": "", "note": ""}, {"name": "大学物理（下）", "teacher": "张新月", "room": "01B204", "weekday": 4, "start": 7, "end": 8, "weeks": [1, 3, 5, 7, 11, 13, 15, 17], "kind": "", "note": "智慧教室"}, {"name": "航空航天与系统工程", "teacher": "梁燕娟", "room": "07B105", "weekday": 5, "start": 3, "end": 4, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "影视鉴赏", "teacher": "宋春丽", "room": "05B103", "weekday": 5, "start": 5, "end": 6, "weeks": [1, 2, 3, 4, 5, 6, 7, 8], "kind": "", "note": ""}, {"name": "普通化学", "teacher": "张珂", "room": "09B305", "weekday": 5, "start": 5, "end": 6, "weeks": [14], "kind": "", "note": "溶液折光率的测定"}, {"name": "高等数学Ⅰ(二)", "teacher": "周长芹", "room": "01B501", "weekday": 5, "start": 5, "end": 6, "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "kind": "", "note": ""}, {"name": "企业管理与价值创造", "teacher": "侯丽、白占俊", "room": "05B108", "weekday": 5, "start": 7, "end": 8, "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9], "kind": "", "note": ""}, {"name": "普通化学", "teacher": "张珂", "room": "09B303", "weekday": 5, "start": 7, "end": 8, "weeks": [14], "kind": "", "note": "氧化还原反应"}, {"name": "形势与政策（3）", "teacher": "运奕帆", "room": "01A202", "weekday": 6, "start": 5, "end": 6, "weeks": [7, 8, 9, 10], "kind": "", "note": ""}, {"name": "混合法测量冰的熔化热", "teacher": "冯德胜", "room": "08A409", "weekday": 5, "start": 5, "end": 6, "weeks": [9], "kind": "实验", "note": "电磁学实验室"}, {"name": "等厚干涉现象的观察与应用", "teacher": "王玉梅", "room": "08A410", "weekday": 4, "start": 3, "end": 4, "weeks": [10], "kind": "实验", "note": "光学实验室"}, {"name": "简谐振动与弹簧劲度系数", "teacher": "许军伟", "room": "08A403", "weekday": 5, "start": 5, "end": 6, "weeks": [11], "kind": "实验", "note": "电磁学实验室"}, {"name": "夫琅禾费双缝衍射", "teacher": "王海雨", "room": "08A405", "weekday": 1, "start": 1, "end": 2, "weeks": [10], "kind": "实验", "note": "力学实验室"}, {"name": "太阳能电池综合应用", "teacher": "马晓龙", "room": "08A401", "weekday": 7, "start": 7, "end": 8, "weeks": [11], "kind": "实验", "note": "近代物理实验室"}, {"name": "偏振光的观测与研究", "teacher": "田喜敏", "room": "08C513", "weekday": 6, "start": 3, "end": 4, "weeks": [9], "kind": "实验", "note": "电磁学实验室"}, {"name": "声速的测定", "teacher": "钟发成", "room": "08C510", "weekday": 5, "start": 5, "end": 6, "weeks": [12], "kind": "实验", "note": "光学实验室"}, {"name": "光电效应和普朗克常量的测定", "teacher": "高前程", "room": "08A407", "weekday": 5, "start": 5, "end": 6, "weeks": [10], "kind": "实验", "note": "电子学实验室"}]};
 const DAY = 86400000;
 const WD = ["周一","周二","周三","周四","周五","周六","周日"];
 const BIG = [
@@ -241,6 +264,15 @@ function renderWeek(){
 
 function render(){
   if (mode === "day") renderDay(); else renderWeek();
+  var up = new Date(String(D.updated).replace(" ", "T"));
+  var days = Math.floor((Date.now() - up.getTime()) / 86400000);
+  var el = document.getElementById("updated");
+  if (days >= 2) {
+    el.textContent = "数据更新于 " + D.updated + "（已 " + days + " 天未更新，检查电脑是否开机）";
+    el.style.color = "#dc3545";
+  } else {
+    el.textContent = "数据更新于 " + D.updated;
+  }
   document.getElementById("tabDay").className = mode==="day" ? "on" : "";
   document.getElementById("tabWeek").className = mode==="week" ? "on" : "";
 }
@@ -276,7 +308,105 @@ function closeSheet(){
 document.getElementById("mask").onclick = closeSheet;
 document.getElementById("sClose").onclick = closeSheet;
 
-render();
+/* ---------- 口令门 ---------- */
+function sha256(ascii) {
+  function rr(v, a) { return (v >>> a) | (v << (32 - a)); }
+  var mp = Math.pow, maxWord = mp(2, 32), result = "";
+  var words = [], asciiBitLength = ascii.length * 8;
+  var hash = sha256.h = sha256.h || [];
+  var k = sha256.k = sha256.k || [];
+  var primeCounter = k.length, isComposite = {};
+  for (var candidate = 2; primeCounter < 64; candidate++) {
+    if (!isComposite[candidate]) {
+      for (var i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+      hash[primeCounter] = (mp(candidate, .5) * maxWord) | 0;
+      k[primeCounter++] = (mp(candidate, 1 / 3) * maxWord) | 0;
+    }
+  }
+  ascii += "\x80";
+  while (ascii.length % 64 - 56) ascii += "\x00";
+  for (i = 0; i < ascii.length; i++) {
+    var j = ascii.charCodeAt(i);
+    if (j >> 8) return "";
+    words[i >> 2] |= j << ((3 - i) % 4) * 8;
+  }
+  words[words.length] = (asciiBitLength / maxWord) | 0;
+  words[words.length] = asciiBitLength;
+  for (j = 0; j < words.length;) {
+    var w = words.slice(j, j += 16), oldHash = hash;
+    hash = hash.slice(0, 8);
+    for (i = 0; i < 64; i++) {
+      var w15 = w[i - 15], w2 = w[i - 2], a = hash[0], e = hash[4];
+      var temp1 = hash[7]
+        + (rr(e, 6) ^ rr(e, 11) ^ rr(e, 25))
+        + ((e & hash[5]) ^ ((~e) & hash[6]))
+        + k[i]
+        + (w[i] = (i < 16) ? w[i] : (
+            w[i - 16] + (rr(w15, 7) ^ rr(w15, 18) ^ (w15 >>> 3))
+            + w[i - 7] + (rr(w2, 17) ^ rr(w2, 19) ^ (w2 >>> 10))) | 0);
+      var temp2 = (rr(a, 2) ^ rr(a, 13) ^ rr(a, 22))
+        + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+      hash = [(temp1 + temp2) | 0].concat(hash);
+      hash[4] = (hash[4] + temp1) | 0;
+    }
+    for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+  }
+  for (i = 0; i < 8; i++) {
+    for (j = 3; j + 1; j--) {
+      var b = (hash[i] >> (j * 8)) & 255;
+      result += ((b < 16) ? 0 : "") + b.toString(16);
+    }
+  }
+  return result;
+}
+
+var GATE = D.gate;
+
+function gateOk() {
+  return !GATE || localStorage.getItem("kebiao_gate") === GATE.hash;
+}
+
+function applyGate() {
+  var g = document.getElementById("gate");
+  if (gateOk()) {
+    g.classList.add("off");
+    render();
+    return;
+  }
+  g.classList.remove("off");
+  if (GATE.hint) document.getElementById("ghint").textContent = GATE.hint;
+  var pw = document.getElementById("gpw");
+  pw.value = "";
+  setTimeout(function () { pw.focus(); }, 150);
+}
+
+function tryUnlock() {
+  var v = document.getElementById("gpw").value;
+  var h = sha256(unescape(encodeURIComponent(v)));
+  if (h === GATE.hash) {
+    localStorage.setItem("kebiao_gate", GATE.hash);
+    document.getElementById("gerr").textContent = "";
+    applyGate();
+  } else {
+    document.getElementById("gerr").textContent = "口令不对，再试一次";
+  }
+}
+
+if (GATE) {
+  document.getElementById("gok").addEventListener("click", tryUnlock);
+  document.getElementById("gpw").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") tryUnlock();
+  });
+  var lw = document.getElementById("lockwrap");
+  lw.style.display = "block";
+  document.getElementById("lock").addEventListener("click", function (e) {
+    e.preventDefault();
+    localStorage.removeItem("kebiao_gate");
+    location.reload();
+  });
+}
+
+applyGate();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function(){

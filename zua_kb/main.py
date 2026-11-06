@@ -13,6 +13,7 @@
 """
 
 import argparse
+import json
 import os
 import sys
 from datetime import date
@@ -21,6 +22,55 @@ from . import eams
 from .ics import build_ics
 from .parser import Course, parse_course_table
 from .render import render_html
+
+EXTRAS_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "extras.json"
+)
+
+
+def load_gate():
+    """gate.json 存在且 hash 合法时，页面加口令门。"""
+    path = os.path.join(os.path.dirname(EXTRAS_FILE), "gate.json")
+    if not os.path.exists(path):
+        return None
+    try:
+        d = json.load(open(path, encoding="utf-8"))
+    except Exception as e:
+        print("gate.json 解析失败：%s" % e, file=sys.stderr)
+        return None
+    h = (d.get("hash") or "").strip().lower()
+    if len(h) != 64:
+        return None
+    return {"hash": h, "hint": d.get("hint", "")}
+
+
+def load_extras():
+    """手工补充的课（比如物理实验），每次抓取后合并进来，不会被覆盖。"""
+    if not os.path.exists(EXTRAS_FILE):
+        return []
+    try:
+        data = json.load(open(EXTRAS_FILE, encoding="utf-8"))
+    except Exception as e:
+        print("extras.json 解析失败：%s" % e, file=sys.stderr)
+        return []
+    out = []
+    for item in data:
+        try:
+            out.append(
+                Course(
+                    name=item["name"],
+                    weekday=int(item["weekday"]),
+                    slots=(int(item["slots"][0]), int(item["slots"][1])),
+                    weeks=frozenset(int(w) for w in item.get("weeks", [])),
+                    teacher=item.get("teacher", ""),
+                    room=item.get("room", ""),
+                    note=item.get("note", ""),
+                    kind=item.get("kind", ""),
+                )
+            )
+        except Exception as e:
+            print("extras.json 有一条记录不对：%s" % e, file=sys.stderr)
+    return out
 
 
 def load_dotenv(path=".env"):
@@ -90,6 +140,8 @@ def main(argv=None):
             return 2
         term = date.fromisoformat(args.term_start)
 
+    courses = courses + load_extras()
+
     text = build_ics(courses, term, cal_name=args.cal_name)
     out = args.out
     os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
@@ -98,7 +150,7 @@ def main(argv=None):
 
     html_out = os.path.join(os.path.dirname(out) or ".", "index.html")
     with open(html_out, "w", encoding="utf-8") as f:
-        f.write(render_html(courses, term, title=args.cal_name))
+        f.write(render_html(courses, term, title=args.cal_name, gate=load_gate()))
     print("已生成 %s：%d 门课，%d 字节" % (out, len(courses), len(text.encode("utf-8"))))
     return 0
 
